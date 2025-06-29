@@ -1,18 +1,57 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Pluggy</title>
-  <script src="https://connect.pluggy.ai/latest/pluggy-connect.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <title>Integração Belvo - Conectar Conta Bancária</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Widget oficial da Belvo -->
+  <script src="https://cdn.belvo.io/belvo-widget-1-stable.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f6f6f6; padding: 20px; }
+    .container { max-width: 400px; margin: 40px auto; background: #fff; padding: 32px 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.07);}
+    button { background: #603be9; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+    button:hover { background: #5a30e5; }
+    #result { margin-top: 32px; }
+    .success { color: #31a354; font-weight: bold; }
+    .error { color: #d11a1a; font-weight: bold; }
+  </style>
 </head>
 <body>
-  <h1>Dashboard Financeiro</h1>
-  <button onclick="abrirPluggy()">Conectar Conta</button>
-  <div id="itemIdContainer"></div>
-  <canvas id="graficoTransacoes" width="400" height="200"></canvas>
-  <table id="tabelaTransacoes"></table>
-  <script src="script.js"></script>
+  <div class="container">
+    <h2>Conecte sua Conta Bancária</h2>
+    <p>Clique abaixo para conectar sua conta via Belvo.</p>
+    <button id="connect-belvo">Conectar conta bancária</button>
+    <div id="result"></div>
+  </div>
+  
+  <script>
+    document.getElementById('connect-belvo').onclick = async function () {
+      document.getElementById('result').innerHTML = '';
+      try {
+        // Solicita o access_token temporário ao backend
+        const res = await fetch('http://localhost:5000/api/create-widget-token', { method: 'POST' });
+        if (!res.ok) throw new Error('Erro ao obter token do backend');
+        const { access } = await res.json();
+
+        // Inicializa o widget Belvo
+        const belvoWidget = new BelvoWidget({
+          accessToken: access,
+          locale: "pt",
+          callback: function(link, institution) {
+            document.getElementById('result').innerHTML = 
+              `<div class="success">✅ Banco conectado com sucesso!<br>Banco: <b>${institution.display_name}</b><br>Link ID: <code>${link}</code></div>`;
+            // Aqui você pode enviar o linkId para o backend e continuar a integração
+          },
+          onExit: function(data) {
+            document.getElementById('result').innerHTML = 
+              `<div class="error">Processo cancelado ou erro: ${JSON.stringify(data)}</div>`;
+          }
+        });
+        belvoWidget.open();
+      } catch (err) {
+        document.getElementById('result').innerHTML = `<div class="error">Erro: ${err.message}</div>`;
+      }
+    };
+  </script>
 </body>
 </html>
