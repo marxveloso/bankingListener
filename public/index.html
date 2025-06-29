@@ -29,7 +29,7 @@
       document.getElementById('result').innerHTML = '';
       try {
         // Solicita o access_token temporário ao backend
-        const res = await fetch('http://localhost:5000/api/create-widget-token', { method: 'POST' });
+        const res = await fetch('https://bankinglistener-production.up.railway.app/api/create-widget-token', { method: 'POST' });
         if (!res.ok) throw new Error('Erro ao obter token do backend');
         const { access } = await res.json();
 
