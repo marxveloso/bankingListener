@@ -2,54 +2,46 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Integração Belvo - Conectar Conta Bancária</title>
+  <title>Integração Belvo Widget – Cloud Railway</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Widget oficial da Belvo -->
-  <script src="https://cdn.belvo.io/belvo-widget-1-stable.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f6f6f6; padding: 20px; }
-    .container { max-width: 400px; margin: 40px auto; background: #fff; padding: 32px 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.07);}
-    button { background: #603be9; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; cursor: pointer; }
-    button:hover { background: #5a30e5; }
-    #result { margin-top: 32px; }
-    .success { color: #31a354; font-weight: bold; }
-    .error { color: #d11a1a; font-weight: bold; }
+    body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; padding: 0; }
+    .container { max-width: 400px; margin: 60px auto; background: #fff; padding: 32px 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);}
+    button { background: #603be9; color: #fff; border: none; padding: 14px 28px; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    button:hover { background: #4329a1; }
+    #result { margin-top: 30px; min-height: 40px; }
+    .success { color: #178D3F; font-weight: bold; }
+    .error { color: #B9002C; font-weight: bold; }
+    code { background: #eee; padding: 2px 6px; border-radius: 4px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Conecte sua Conta Bancária</h2>
-    <p>Clique abaixo para conectar sua conta via Belvo.</p>
-    <button id="connect-belvo">Conectar conta bancária</button>
+    <p>Clique para gerar o token do widget da Belvo (Railway).</p>
+    <button id="connect-belvo">Gerar access token do Widget</button>
     <div id="result"></div>
   </div>
-  
   <script>
     document.getElementById('connect-belvo').onclick = async function () {
-      document.getElementById('result').innerHTML = '';
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Processando...';
       try {
-        // Solicita o access_token temporário ao backend
-        const res = await fetch('https://bankinglistener-production.up.railway.app/api/create-widget-token', { method: 'POST' });
-        if (!res.ok) throw new Error('Erro ao obter token do backend');
-        const { access } = await res.json();
-
-        // Inicializa o widget Belvo
-        const belvoWidget = new BelvoWidget({
-          accessToken: access,
-          locale: "pt",
-          callback: function(link, institution) {
-            document.getElementById('result').innerHTML = 
-              `<div class="success">✅ Banco conectado com sucesso!<br>Banco: <b>${institution.display_name}</b><br>Link ID: <code>${link}</code></div>`;
-            // Aqui você pode enviar o linkId para o backend e continuar a integração
-          },
-          onExit: function(data) {
-            document.getElementById('result').innerHTML = 
-              `<div class="error">Processo cancelado ou erro: ${JSON.stringify(data)}</div>`;
-          }
+        const res = await fetch('https://bankinglistener-production.up.railway.app/api/create-widget-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
         });
-        belvoWidget.open();
+        const data = await res.json();
+        if (res.ok && data.access) {
+          resultDiv.innerHTML =
+            `<div class="success">✅ Access Token gerado com sucesso!<br><small>Cole o token abaixo no widget Belvo ou use na próxima etapa.</small><br><code>${data.access}</code></div>`;
+        } else {
+          resultDiv.innerHTML =
+            `<div class="error">❌ Erro ao gerar token.<br>${data.error ? data.error : 'Erro desconhecido'}<br>${data.details ? JSON.stringify(data.details) : ''}</div>`;
+        }
       } catch (err) {
-        document.getElementById('result').innerHTML = `<div class="error">Erro: ${err.message}</div>`;
+        resultDiv.innerHTML =
+          `<div class="error">❌ Falha ao conectar com o backend.<br>${err.message}</div>`;
       }
     };
   </script>
