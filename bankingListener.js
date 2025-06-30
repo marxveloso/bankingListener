@@ -22,18 +22,18 @@ app.get('/error', (req, res) => {
   res.send('❌ Ocorreu um erro ao conectar a conta.');
 });
 
-const BELVO_ID = process.env.BELVO_SECRET_ID;
-const BELVO_PW = process.env.BELVO_SECRET_PASSWORD;
-console.log(BELVO_ID ? 'BELVO_SECRET_ID carregado com sucesso.' : 'Erro: BELVO_SECRET_ID não definido!');
-console.log(BELVO_PW ? 'BELVO_SECRET_PASSWORD carregado com sucesso.' : 'Erro: BELVO_SECRET_PASSWORD não definido!');
+const BELVO_SECRET_ID = process.env.BELVO_SECRET_ID;
+const BELVO_SECRET_PASSWORD = process.env.BELVO_SECRET_PASSWORD;
+console.log(BELVO_SECRET_ID ? 'BELVO_SECRET_ID carregado com sucesso.' : 'Erro: BELVO_SECRET_ID não definido!');
+console.log(BELVO_SECRET_PASSWORD ? 'BELVO_SECRET_PASSWORD carregado com sucesso.' : 'Erro: BELVO_SECRET_PASSWORD não definido!');
 
 // Endpoint para gerar um widget access token atualizado
 app.post('/api/create-widget-token', async (req, res) => {
   try {
     // Substitua os valores fixos pelos dados reais da sua aplicação ou do frontend conforme necessidade
     const data = {
-      id: BELVO_ID,
-      password: BELVO_PW,
+      id: BELVO_SECRET_ID,
+      password: BELVO_SECRET_PASSWORD,
       scopes: "read_institutions,write_links,read_consents,write_consents,write_consent_callback,delete_consents",
       stale_in: "90d",
       fetch_resources: ["ACCOUNTS", "TRANSACTIONS", "OWNERS", "BILLS"],
