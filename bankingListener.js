@@ -24,6 +24,8 @@ app.get('/error', (req, res) => {
 
 const BELVO_ID = process.env.BELVO_SECRET_ID;
 const BELVO_PW = process.env.BELVO_SECRET_PASSWORD;
+console.log(BELVO_ID ? 'BELVO_SECRET_ID carregado com sucesso.' : 'Erro: BELVO_SECRET_ID não definido!');
+console.log(BELVO_PW ? 'BELVO_SECRET_PASSWORD carregado com sucesso.' : 'Erro: BELVO_SECRET_PASSWORD não definido!');
 
 // Endpoint para gerar um widget access token atualizado
 app.post('/api/create-widget-token', async (req, res) => {
