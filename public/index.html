@@ -2,47 +2,56 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Integração Belvo Widget OFDA</title>
-  <script src="https://cdn.belvo.io/widget-ofda/v1.0/belvo-widget-ofda.min.js"></script>
+  <title>Belvo Hosted Widget OFDA – Integração Simples</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial; background: #f8f8f8; }
-    .container { max-width: 400px; margin: 50px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 16px #0001; padding: 24px; }
+    body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; padding: 0; }
+    .container { max-width: 400px; margin: 60px auto; background: #fff; padding: 32px 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);}
     button { background: #603be9; color: #fff; border: none; padding: 14px 28px; border-radius: 8px; font-size: 1rem; cursor: pointer; }
     button:hover { background: #4329a1; }
+    #result { margin-top: 30px; min-height: 40px; }
+    .error { color: #B9002C; font-weight: bold; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Conecte sua Conta Bancária</h2>
-    <p>Integração segura com Open Finance via Belvo.</p>
+    <p>Integração via Hosted Widget do Open Finance Belvo.</p>
     <button id="connect-belvo">Conectar conta bancária</button>
+    <div id="result"></div>
   </div>
   <script>
     document.getElementById('connect-belvo').onclick = async function () {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Gerando token...';
       try {
+        // Chama seu backend para obter o access token
         const res = await fetch('https://bankinglistener-production.up.railway.app/api/create-widget-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
         const data = await res.json();
         if (!data.access) {
-          alert('Erro ao obter token: ' + (data.error || ''));
+          resultDiv.innerHTML = `<div class="error">Erro ao obter token: ${data.error || 'Erro desconhecido'}</div>`;
           return;
         }
-        BelvoWidgetOFDA.create({
-          accessToken: data.access,
-          onSuccess: (link, institution) => {
-            alert('Conta conectada! Você pode prosseguir.');
-          },
-          onExit: () => {
-            alert('Processo cancelado pelo usuário.');
-          },
-          onError: (error) => {
-            alert('Erro: ' + JSON.stringify(error));
-          },
-        }).open();
+        // Monta a URL do widget conforme documentação
+        const params = [
+          'access_token=' + encodeURIComponent(data.access),
+          'locale=pt',
+          'mode=webapp',
+          'integration_type=openfinance',
+          'institution_types=retail',
+          'country_codes=BR',
+          'resources=OWNERS,ACCOUNTS'
+          // Você pode adicionar mais parâmetros aqui se desejar
+        ].join('&');
+        const widgetUrl = 'https://widget.belvo.io/?' + params;
+        // Abre o widget em uma nova aba
+        window.open(widgetUrl, '_blank');
+        resultDiv.innerHTML = '';
       } catch (err) {
-        alert('Falha ao conectar ao backend: ' + err.message);
+        resultDiv.innerHTML = `<div class="error">Falha ao conectar com o backend: ${err.message}</div>`;
       }
     };
   </script>
